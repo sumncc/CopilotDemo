@@ -12,9 +12,9 @@ name: HLD Generator
 # The other two env vars have no duplicate — update them in one place only.
 # ─────────────────────────────────────────────────────────────────────────────
 env:
-  TARGET_BRANCH: main          # <-- (1) target branch — keep in sync with on.pull_request.branches
-  WATCHED_FOLDER: docs         # <-- watched folder path
-  HLD_OUTPUT: docs/HLD.md      # <-- output HLD path/file name
+  TARGET_BRANCH: main                  # <-- (1) target branch — keep in sync with on.pull_request.branches
+  WATCHED_FOLDER: doc/requirements     # <-- watched folder path (requirement Markdown files live here)
+  HLD_OUTPUT: doc/hld/HLD.md          # <-- output HLD path/file name
 
 on:
   pull_request:
@@ -92,19 +92,20 @@ jobs:
           path: ${{ env.HLD_OUTPUT }}
           if-no-files-found: warn
 
-      # ── Step 5 (optional): open a PR with the updated HLD ──
-      # Uncomment this step if you want the workflow to commit and PR the HLD.
-      #
-      # - name: Open PR with generated HLD
-      #   if: >
-      #     steps.folder-check.outputs.changed == 'true' &&
-      #     steps.find-md.outputs.found == 'true'
-      #   uses: peter-evans/create-pull-request@v6
-      #   with:
-      #     commit-message: "docs: regenerate HLD from PR #${{ github.event.pull_request.number }}"
-      #     branch: hld/auto-update-pr-${{ github.event.pull_request.number }}
-      #     title: "docs: update HLD from PR #${{ github.event.pull_request.number }}"
-      #     body: |
-      #       Auto-generated HLD update triggered by PR #${{ github.event.pull_request.number }}
-      #       merged into `${{ env.TARGET_BRANCH }}`.
-      #     labels: documentation,automated
+      # ── Step 5: open a PR with the updated HLD ──
+      - name: Open PR with generated HLD
+        if: >
+          steps.folder-check.outputs.changed == 'true' &&
+          steps.find-md.outputs.found == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs: regenerate HLD from PR #${{ github.event.pull_request.number }}"
+          branch: hld/auto-update-pr-${{ github.event.pull_request.number }}
+          title: "docs: update HLD from PR #${{ github.event.pull_request.number }}"
+          body: |
+            Auto-generated HLD update triggered by PR #${{ github.event.pull_request.number }}
+            merged into `${{ env.TARGET_BRANCH }}`.
+
+            **Source folder:** `${{ env.WATCHED_FOLDER }}`
+            **Output file:** `${{ env.HLD_OUTPUT }}`
+          labels: documentation,automated
