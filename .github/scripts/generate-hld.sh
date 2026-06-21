@@ -53,8 +53,13 @@ mkdir -p "$(dirname "$OUTPUT_FILE")"
   idx=2
   for f in "${MD_FILES[@]}"; do
     fname=$(basename "$f" .md)
-    # GitHub-flavoured anchor: lower-case, spaces → hyphens
-    anchor=$(echo "$fname" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '[:alnum:]-')
+    # GitHub-flavoured anchor: lower-case, spaces → hyphens, strip non-alnum/hyphen,
+    # collapse consecutive hyphens, trim leading/trailing hyphens
+    anchor=$(echo "$fname" \
+      | tr '[:upper:]' '[:lower:]' \
+      | tr ' ' '-' \
+      | tr -cd '[:alnum:]-' \
+      | sed 's/-\{2,\}/-/g; s/^-//; s/-$//')
     echo "${idx}. [${fname}](#${anchor})"
     idx=$((idx + 1))
   done
