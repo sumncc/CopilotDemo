@@ -15,6 +15,8 @@ This document describes a dummy shopping cart system for an e-commerce site.
 - NFR-2: Cart state should persist for returning users during the same session.
 - NFR-3: The cart page should remain usable on desktop and mobile devices.
 
+
+
 ## Assumptions
 - Product catalog data is already available to the shopping cart service.
 - Pricing and discount rules are provided by upstream business logic.
