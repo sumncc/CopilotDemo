@@ -58,6 +58,8 @@ active_content() {
 }
 
 # ── Extract the first non-blank paragraph after "## Overview" ────────────────
+# Limit to 5 lines to keep the overview concise in the generated HLD;
+# the full requirement file is available via the source reference in the header.
 get_overview() {
   awk '/^## Overview/{found=1; next} found && /^## /{exit} found && NF{print}' "$1" \
     | head -5
@@ -127,6 +129,8 @@ generate_mermaid() {
     echo "  end"
     echo ""
     for ext in "${externals[@]}"; do
+      # Each entry in externals is in the format "NodeId[Label]" (set above);
+      # strip everything from the first '[' to extract the node ID.
       local ext_id
       ext_id=$(echo "$ext" | sed 's/\[.*//')
       echo "  ${node_id} --> ${ext_id}"
