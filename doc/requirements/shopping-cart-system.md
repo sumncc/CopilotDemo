@@ -25,4 +25,3 @@ This document describes a dummy shopping cart system for an e-commerce site.
 - Payment processing.
 - Order fulfillment.
 - Inventory management.
-- User Auth 
