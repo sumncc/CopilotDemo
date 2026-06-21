@@ -1,9 +1,9 @@
 # High-Level Design: shopping-cart-system
 
 > **Auto-generated** from `doc/requirements/shopping-cart-system.md`
-> triggered by PR #25: *Test1*
+> triggered by PR #31: *Add user authentication to out of scope section*
 >
-> Generated: 2026-06-21T20:10:47Z
+> Generated: 2026-06-21T22:34:42Z
 
 ---
 
