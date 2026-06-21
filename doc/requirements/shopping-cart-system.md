@@ -4,7 +4,7 @@
 This document describes a dummy shopping cart system for an e-commerce site.
 
 ## Functional requirements
-- FR-1: Users can add products to the cart.
+- FR-1: Users can add products to the cart. Test
 - FR-2: Users can update item quantities in the cart.
 - FR-3: Users can remove items from the cart.
 - FR-4: Users can view the cart summary before checkout.
