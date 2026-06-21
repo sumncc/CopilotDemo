@@ -16,6 +16,21 @@ Files are generated automatically by the **LLD Generator** workflow
 - `doc/lld/` — an existing LLD file was modified (the automation re-syncs it
   from its corresponding HLD source).
 
+## LLD → Stories pipeline
+
+When a merged pull request adds or modifies `doc/lld/*-lld.md`, the
+**Story Generator** workflow (`.github/workflows/story-generator.yml`)
+correlates the matching requirement, HLD, and LLD files and generates ordered
+implementation story files under `doc/stories/`:
+
+- `doc/lld/payment-flow-lld.md` → `doc/stories/payment-flow-stories.md`
+- `doc/lld/user-authentication-lld.md` → `doc/stories/user-authentication-stories.md`
+
+Before each story-generation run, the workflow clears previously generated
+`doc/stories/*-stories.md` files so the output always starts from a clean set.
+See [`doc/stories/README.md`](../stories/README.md) for details on the story
+format, sequencing rules, and priority handling.
+
 ## LLD document structure
 
 Each generated LLD file contains the following sections:
