@@ -1,9 +1,9 @@
 # High-Level Design: shopping-cart-system
 
 > **Auto-generated** from `doc/requirements/shopping-cart-system.md`
-> triggered by PR #36: *Update out of scope items in requirements document*
+> triggered by PR #41: *Remove User Auth from out of scope requirements*
 >
-> Generated: 2026-06-21T22:56:50Z
+> Generated: 2026-06-21T23:37:14Z
 
 ---
 
