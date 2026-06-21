@@ -68,22 +68,31 @@ Append any of these lines to the prompt above when needed:
 ## How the Automation Works
 
 ```
-PR merged into <target-branch>
+Push to <target-branch> (after PR merge)
         │
         ▼
 GitHub Actions: lld-generator.yml
         │
-        ├─ Did <hld-folder> change? ──No──► Stop (no-op)
+        ├─ Did <hld-folder> or <lld-output-dir> change? ──No──► Stop (no-op)
+        │   (compares github.event.before → github.sha on main)
         │
         └─ Yes
               │
-              ├─ Find *-hld.md files changed in the PR
+              ├─ (a) Find *-hld.md files changed directly in <hld-folder>
+              │
+              ├─ (b) Find *-lld.md files changed in <lld-output-dir>
+              │         │
+              │         └─ Map each back to its HLD source:
+              │              <lld-output-dir>/foo-lld.md → <hld-folder>/foo-hld.md
+              │              (skipped if the HLD source does not exist on main)
+              │
+              ├─ Merge (a) + (b) and deduplicate
               │       │
               │       └─ None found? ──► Warning, stop
               │
               └─ Run .github/scripts/generate-lld.sh
                         │
-                        └─ For each changed HLD file:
+                        └─ For each HLD file in the merged set:
                                   │
                                   ├─ Extract overview & assumptions from HLD
                                   ├─ Derive Mermaid sequenceDiagram (participants
@@ -95,6 +104,17 @@ GitHub Actions: lld-generator.yml
                                             └─ Upload as workflow artifact "lld-documents"
 ```
 
+> **Note:** The workflow triggers on `push` to `<target-branch>` (not on PR
+> open/update). This means it fires only after a PR is merged and the resulting
+> commit lands on `main`. Changed-file detection uses
+> `github.event.before` → `github.sha` so it always reflects the actual
+> post-merge state on `main`.
+>
+> The workflow triggers when either `<hld-folder>` **or** `<lld-output-dir>`
+> contains changed files in the push. When an LLD file is edited directly and
+> merged, the automation re-syncs it from its corresponding HLD source, keeping
+> LLD content canonical.
+
 ---
 
 ## Configuration
@@ -104,7 +124,7 @@ The workflow is configured via environment variables at the top of
 
 ```yaml
 env:
-  TARGET_BRANCH:  main                  # branch that receives merged PRs
+  TARGET_BRANCH:  main                  # branch to watch for pushes (keep in sync with on.push.branches)
   WATCHED_FOLDER: doc/hld               # folder to watch for HLD Markdown changes
   LLD_OUTPUT_DIR: doc/lld               # directory where LLD files are written
 ```
