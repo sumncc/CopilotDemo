@@ -1,9 +1,9 @@
 # High-Level Design: shopping-cart-system
 
 > **Auto-generated** from `doc/requirements/shopping-cart-system.md`
-> triggered by PR #10: *Fix typo in functional requirement FR-1*
+> triggered by PR #13: *Add assumptions section to shopping cart requirements*
 >
-> Generated: 2026-06-21T15:55:40Z
+> Generated: 2026-06-21T17:49:57Z
 
 ---
 
