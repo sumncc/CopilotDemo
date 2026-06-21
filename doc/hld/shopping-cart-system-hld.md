@@ -1,9 +1,9 @@
 # High-Level Design: shopping-cart-system
 
 > **Auto-generated** from `doc/requirements/shopping-cart-system.md`
-> triggered by PR #18: *LLD gen should work with changes of requiremnts*
+> triggered by PR #25: *Test1*
 >
-> Generated: 2026-06-21T19:02:47Z
+> Generated: 2026-06-21T20:10:47Z
 
 ---
 
