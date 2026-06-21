@@ -133,6 +133,20 @@ Change these three values to adapt the workflow to any project or folder layout.
 
 ---
 
+## Downstream Story Generation
+
+Generated LLD files can feed the next automation stage. When a merged pull
+request adds or modifies `doc/lld/*-lld.md`, the
+**Story Generator** workflow (`.github/workflows/story-generator.yml`) uses the
+matching requirement, HLD, and LLD documents to create ordered
+`doc/stories/*-stories.md` files.
+
+See [`docs/story-prompt-template.md`](story-prompt-template.md) for the manual
+re-trigger template and [`doc/stories/README.md`](../doc/stories/README.md) for
+the generated output format.
+
+---
+
 ## LLD Output Format
 
 Each generated `*-lld.md` file contains:

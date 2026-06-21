@@ -1,0 +1,122 @@
+name: Story Generator
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CONFIGURATION — to change the target branch, update TWO values:
+#   (1) env.TARGET_BRANCH below   — used inside job steps
+#   (2) on.pull_request.branches  — controls which merges trigger the workflow
+#
+# Note: GitHub Actions does not support env-var references inside the
+# 'branches' trigger filter, so the branch name must appear in both places.
+# The numbered comments (1) and (2) make it easy to find both locations.
+#
+# The other two env vars have no duplicate — update them in one place only.
+# ─────────────────────────────────────────────────────────────────────────────
+env:
+  TARGET_BRANCH: main                  # <-- (1) target branch — keep in sync with on.pull_request.branches
+  WATCHED_FOLDER: doc/lld              # <-- watched folder path (LLD Markdown files live here)
+  STORY_OUTPUT_DIR: doc/stories        # <-- output directory for generated story files
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main                   # <-- (2) keep in sync with env.TARGET_BRANCH above
+    paths:
+      - 'doc/lld/**'
+
+jobs:
+  generate-stories:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if watched folder changed
+        id: folder-check
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+                    | grep "^${{ env.WATCHED_FOLDER }}/" || true)
+          if [ -n "$CHANGED" ]; then
+            echo "changed=true"  >> "$GITHUB_OUTPUT"
+            echo "::notice::Folder '${{ env.WATCHED_FOLDER }}' changed — story generation triggered."
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Folder '${{ env.WATCHED_FOLDER }}' did not change — skipping story generation."
+          fi
+
+      - name: Find changed LLD Markdown files
+        if: steps.folder-check.outputs.changed == 'true'
+        id: find-lld
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+
+          LLD_FILES=$(git diff --name-status "$BASE_SHA" "$HEAD_SHA" \
+                     | awk '$1 ~ /^[AM]$/ {print $2}' \
+                     | grep "^${{ env.WATCHED_FOLDER }}/.*-lld\.md$" \
+                     | sort -u | tr '\n' ' ' | sed 's/ *$//' || true)
+
+          if [ -n "$LLD_FILES" ]; then
+            echo "found=true"       >> "$GITHUB_OUTPUT"
+            echo "files=$LLD_FILES" >> "$GITHUB_OUTPUT"
+            echo "::notice::LLD files to process: $LLD_FILES"
+          else
+            echo "found=false"      >> "$GITHUB_OUTPUT"
+            echo "::warning::No new or modified *-lld.md files found in '${{ env.WATCHED_FOLDER }}'."
+          fi
+
+      - name: Generate story files
+        if: >
+          steps.folder-check.outputs.changed == 'true' &&
+          steps.find-lld.outputs.found == 'true'
+        run: |
+          chmod +x .github/scripts/generate-stories.sh
+          read -ra LLD_FILES <<< "${{ steps.find-lld.outputs.files }}"
+          .github/scripts/generate-stories.sh \
+            "${{ env.STORY_OUTPUT_DIR }}" \
+            "${{ github.event.pull_request.number }}" \
+            "${{ github.event.pull_request.title }}" \
+            "${LLD_FILES[@]}"
+
+      - name: Upload story artifacts
+        if: >
+          steps.folder-check.outputs.changed == 'true' &&
+          steps.find-lld.outputs.found == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: story-documents
+          path: ${{ env.STORY_OUTPUT_DIR }}/*-stories.md
+          if-no-files-found: warn
+
+      - name: Open PR with generated story files
+        if: >
+          steps.folder-check.outputs.changed == 'true' &&
+          steps.find-lld.outputs.found == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs: regenerate story file(s) from PR #${{ github.event.pull_request.number }}"
+          branch: stories/auto-update-pr-${{ github.event.pull_request.number }}
+          title: "docs: update story file(s) from PR #${{ github.event.pull_request.number }}"
+          body: |
+            Auto-generated story update triggered by PR #${{ github.event.pull_request.number }}
+            merged into `${{ env.TARGET_BRANCH }}`.
+
+            **LLD source folder:** `${{ env.WATCHED_FOLDER }}`
+            **Story output directory:** `${{ env.STORY_OUTPUT_DIR }}`
+            **LLD files processed:** `${{ steps.find-lld.outputs.files }}`
+
+            This workflow clears previously generated story files before writing
+            the new set for the changed LLD inputs, then opens this follow-up PR.
+
+            Example mapping:
+            - `doc/lld/payment-flow-lld.md` → `doc/stories/payment-flow-stories.md`
+          labels: documentation,automated
