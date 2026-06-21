@@ -1,9 +1,9 @@
 # High-Level Design: shopping-cart-system
 
 > **Auto-generated** from `doc/requirements/shopping-cart-system.md`
-> triggered by PR #13: *Add assumptions section to shopping cart requirements*
+> triggered by PR #15: *Update title of shopping cart system document*
 >
-> Generated: 2026-06-21T17:49:57Z
+> Generated: 2026-06-21T18:11:48Z
 
 ---
 
