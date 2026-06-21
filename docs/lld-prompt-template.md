@@ -106,7 +106,7 @@ The workflow is configured via environment variables at the top of
 env:
   TARGET_BRANCH:  main                  # branch that receives merged PRs
   WATCHED_FOLDER: doc/hld               # folder to watch for HLD Markdown changes
-  LLD_OUTPUT_DIR: doc/lld              # directory where LLD files are written
+  LLD_OUTPUT_DIR: doc/lld               # directory where LLD files are written
 ```
 
 Change these three values to adapt the workflow to any project or folder layout.

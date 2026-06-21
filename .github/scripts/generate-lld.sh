@@ -218,7 +218,7 @@ for HLD_FILE in "$@"; do
   TITLE=$(to_title "$FEATURE_BASENAME")
 
   {
-    echo "# Low-Level Design: ${FEATURE_BASENAME}"
+    echo "# Low-Level Design: ${TITLE}"
     echo ""
     echo "> **Auto-generated** from \`${HLD_FILE}\`"
     echo "> triggered by PR #${PR_NUMBER}: *${PR_TITLE}*"

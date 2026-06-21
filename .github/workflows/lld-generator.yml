@@ -14,7 +14,7 @@ name: LLD Generator
 env:
   TARGET_BRANCH:  main                  # <-- (1) target branch — keep in sync with on.pull_request.branches
   WATCHED_FOLDER: doc/hld               # <-- watched folder path (HLD Markdown files live here)
-  LLD_OUTPUT_DIR: doc/lld              # <-- output directory for generated LLD files
+  LLD_OUTPUT_DIR: doc/lld               # <-- output directory for generated LLD files
 
 on:
   pull_request:
