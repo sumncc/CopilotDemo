@@ -1,9 +1,9 @@
 # Low-Level Design: Shopping Cart System
 
 > **Auto-generated** from `doc/hld/shopping-cart-system-hld.md`
-> triggered by commit `5ed175e3fddcf5fe0f5e29d25de9b023a1a490dd` (push to main)
+> triggered by commit `3a030bcb8dad57e1a7d74c35b847adcbfd78830d` (push to main)
 >
-> Generated: 2026-06-21T20:22:36Z
+> Generated: 2026-06-21T22:36:17Z
 
 ---
 
@@ -20,10 +20,13 @@ sequenceDiagram
   participant User
   participant UI[UI / Frontend]
   participant API[Shopping Cart System API]
+  participant Auth[Auth Service]
   participant DB[(Data Store)]
 
   User->>UI: Submit request
-  UI->>API: POST /request
+  UI->>Auth: Authenticate
+  Auth-->>UI: Token
+  UI->>API: Request + Token
   API->>DB: Read / Write data
   DB-->>API: Result
   API-->>UI: Response
@@ -45,6 +48,12 @@ flowchart LR
   User([User]) --> UI[UI / Frontend]
   UI --> ShoppingcartsystemAPI
   ShoppingcartsystemAPI --> DB
+
+  subgraph Ext["External Services"]
+    AuthSvc[Auth Service]
+  end
+
+  ShoppingcartsystemAPI --> AuthSvc
 ```
 
 ---
