@@ -1,9 +1,9 @@
 # Low-Level Design: Shopping Cart System
 
 > **Auto-generated** from `doc/hld/shopping-cart-system-hld.md`
-> triggered by PR #20: *docs: update HLD file(s) from PR #18*
+> triggered by commit `2b08a31749fee8d57ed0e662cc040a8e20f24f6c` (push to main)
 >
-> Generated: 2026-06-21T19:20:23Z
+> Generated: 2026-06-21T20:15:17Z
 
 ---
 
