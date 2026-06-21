@@ -2,9 +2,12 @@
 
 Place requirement Markdown files in this folder.
 
-Any `.md` file added or updated here and merged into `main` will automatically
-trigger the HLD Generator workflow, which reads all files in this folder and
-produces (or updates) `doc/hld/HLD.md`.
+Any `.md` file added or updated here (excluding `README.md`) and merged into
+`main` will automatically trigger the HLD Generator workflow. The workflow
+generates one HLD file per changed requirement file in `doc/hld/`:
+
+- `doc/requirements/payment-flow.md` → `doc/hld/payment-flow-hld.md`
+- `doc/requirements/user-authentication.md` → `doc/hld/user-authentication-hld.md`
 
 ## File naming
 
@@ -41,6 +44,7 @@ Short description of the feature.
 - ...
 ```
 
-The HLD generator will inline the content of every file here into the HLD
-document and provide structural stub sections (Components, Data/Control Flow,
-Assumptions, Open Questions) for a developer or cloud agent to complete.
+The HLD generator will create a separate `doc/hld/<name>-hld.md` for each
+requirement file, including the file's content and structural stub sections
+(Components, Data/Control Flow, Assumptions, Open Questions) for a developer
+or cloud agent to complete.
