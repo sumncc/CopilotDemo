@@ -45,6 +45,12 @@ Short description of the feature.
 ```
 
 The HLD generator will create a separate `doc/hld/<name>-hld.md` for each
-requirement file, including the file's content and structural stub sections
-(Components, Data/Control Flow, Assumptions, Open Questions) for a developer
-or cloud agent to complete.
+requirement file. Each generated HLD includes:
+
+- **Overview** extracted from the requirement
+- **Solution Architecture Diagram** — a fenced Mermaid `flowchart LR` block
+  showing actors, the main service, data stores, and external integrations
+  derived from the requirement content
+- **Components** table (placeholder to fill in)
+- **Assumptions** extracted from the requirement
+- **Open Questions** placeholder

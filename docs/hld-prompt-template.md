@@ -27,11 +27,13 @@ Task:
    - `<watched-folder>/payment-flow.md` → `<hld-output-dir>/payment-flow-hld.md`
    - `<watched-folder>/user-authentication.md` → `<hld-output-dir>/user-authentication-hld.md`
    Each HLD must include:
-   - System overview
-   - Main components (table preferred)
-   - Data and control flow (Mermaid diagram preferred)
-   - Assumptions
-   - Open questions
+   - Overview (extracted from the requirement)
+   - Solution Architecture Diagram (fenced Mermaid flowchart using `flowchart LR` or
+     `flowchart TB`; use subgraphs to group actors, the main system, and external services;
+     derive actors, services, data stores, and integrations from the requirement content)
+   - Components (table of main components/services)
+   - Assumptions (extracted from the requirement)
+   - Open Questions
 6. If no relevant Markdown files are found in the folder, report that clearly and stop.
 7. If the folder was not changed in the latest merged PR, report that clearly and stop.
 8. Do not modify any application source code or unrelated files.
@@ -56,7 +58,7 @@ Task:
 
 Append any of these lines to the prompt above when needed:
 
-- `"Use Mermaid diagrams wherever flow or relationships are described."`
+- `"Use subgraphs to clearly separate actors, the core system, and external integrations."`
 - `"Keep the HLD concise — one page if possible."`
 - `"Include line references back to the source Markdown files."`
 - `"Follow the existing documentation style in the repository."`
@@ -83,6 +85,9 @@ GitHub Actions: hld-generator.yml
                         │
                         └─ For each changed requirement file:
                                   │
+                                  ├─ Extract overview & assumptions from requirement
+                                  ├─ Derive Mermaid flowchart (actors, services,
+                                  │   data stores, external integrations)
                                   └─ Write <hld-output-dir>/<basename>-hld.md
                                             │
                                             └─ Upload as workflow artifact "hld-documents"
@@ -103,3 +108,44 @@ env:
 ```
 
 Change these three values to adapt the workflow to any project or folder layout.
+
+---
+
+## HLD Output Format
+
+Each generated `*-hld.md` file contains:
+
+```markdown
+## Overview
+<short description extracted from the requirement file>
+
+## Solution Architecture Diagram
+
+```mermaid
+flowchart LR
+
+  subgraph System["My Feature"]
+    MyfeatureService[My Feature Service]
+    DB[(Data Store)]
+  end
+
+  User([User]) --> MyfeatureService
+  MyfeatureService --> DB
+
+  subgraph Ext["External Services"]
+    AuthSvc[Auth Service]
+  end
+
+  MyfeatureService --> AuthSvc
+```
+
+## Components
+| Component | Responsibility | Technology |
+...
+
+## Assumptions
+- ...
+
+## Open Questions
+- ...
+```
