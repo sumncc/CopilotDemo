@@ -37,14 +37,14 @@ Task:
 
 ## Placeholder Reference
 
-| Placeholder          | Example value          | Description                              |
-|----------------------|------------------------|------------------------------------------|
-| `<owner/repo>`       | `sumncc/CopilotDemo`   | GitHub repository in `owner/repo` format |
-| `<target-branch>`    | `main`                 | Branch that receives merged PRs          |
-| `<pr-number>`        | `42`                   | Optional — pin to a specific PR          |
-| `<watched-folder>`   | `docs`                 | Folder to watch for Markdown changes     |
-| `<hld-output-path>`  | `docs`                 | Directory where the HLD is written       |
-| `<hld-output-file>`  | `HLD.md`               | File name for the generated HLD          |
+| Placeholder          | Example value               | Description                              |
+|----------------------|-----------------------------|------------------------------------------|
+| `<owner/repo>`       | `sumncc/CopilotDemo`        | GitHub repository in `owner/repo` format |
+| `<target-branch>`    | `main`                      | Branch that receives merged PRs          |
+| `<pr-number>`        | `42`                        | Optional — pin to a specific PR          |
+| `<watched-folder>`   | `doc/requirements`          | Folder to watch for Markdown changes     |
+| `<hld-output-path>`  | `doc/hld`                   | Directory where the HLD is written       |
+| `<hld-output-file>`  | `HLD.md`                    | File name for the generated HLD          |
 
 ---
 
@@ -92,9 +92,9 @@ The workflow is configured via environment variables at the top of
 
 ```yaml
 env:
-  TARGET_BRANCH:  main        # branch that receives merged PRs
-  WATCHED_FOLDER: docs        # folder to watch for Markdown changes
-  HLD_OUTPUT:     docs/HLD.md # output HLD path/file name
+  TARGET_BRANCH:  main                 # branch that receives merged PRs
+  WATCHED_FOLDER: doc/requirements     # folder to watch for Markdown changes
+  HLD_OUTPUT:     doc/hld/HLD.md      # output HLD path/file name
 ```
 
 Change these three values to adapt the workflow to any project or folder layout.
