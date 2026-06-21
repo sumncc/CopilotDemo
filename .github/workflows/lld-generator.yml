@@ -36,6 +36,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      # ── Compute a short SHA for use in branch names and PR titles ──
+      - name: Compute short SHA
+        id: short-sha
+        run: echo "sha=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+
       # ── Step 1: detect whether the watched folder changed in this push ──
       - name: Check if watched folder changed
         id: folder-check
@@ -103,9 +108,9 @@ jobs:
           steps.find-hld.outputs.found == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "docs: regenerate LLD file(s) from ${{ github.sha }}"
-          branch: lld/auto-update-${{ github.sha }}
-          title: "docs: update LLD file(s) from commit ${{ github.sha }}"
+          commit-message: "docs: regenerate LLD file(s) from ${{ steps.short-sha.outputs.sha }}"
+          branch: lld/auto-update-${{ steps.short-sha.outputs.sha }}
+          title: "docs: update LLD file(s) from commit ${{ steps.short-sha.outputs.sha }}"
           body: |
             Auto-generated LLD update triggered by push to `${{ env.TARGET_BRANCH }}`
             (commit `${{ github.sha }}`).
