@@ -10,11 +10,11 @@ This document describes a dummy shopping cart system for an e-commerce site.
 - FR-4: Users can view the cart summary before checkout.
 - FR-5: The system can calculate subtotal, discounts, tax, and total.
 
+
 ## Non-functional requirements
 - NFR-1: Cart updates should appear immediately after each user action.
 - NFR-2: Cart state should persist for returning users during the same session.
 - NFR-3: The cart page should remain usable on desktop and mobile devices.
-
 
 
 ## Assumptions
@@ -25,3 +25,4 @@ This document describes a dummy shopping cart system for an e-commerce site.
 - Payment processing.
 - Order fulfillment.
 - Inventory management.
+- User Auth 
