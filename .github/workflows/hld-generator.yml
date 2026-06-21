@@ -14,7 +14,7 @@ name: HLD Generator
 env:
   TARGET_BRANCH: main                  # <-- (1) target branch — keep in sync with on.pull_request.branches
   WATCHED_FOLDER: doc/requirements     # <-- watched folder path (requirement Markdown files live here)
-  HLD_OUTPUT: doc/hld/HLD.md          # <-- output HLD path/file name
+  HLD_OUTPUT_DIR: doc/hld             # <-- output directory for generated HLD files
 
 on:
   pull_request:
@@ -53,59 +53,69 @@ jobs:
             echo "::notice::Folder '${{ env.WATCHED_FOLDER }}' did not change — skipping HLD generation."
           fi
 
-      # ── Step 2: discover .md files in the watched folder ──
-      - name: Find Markdown files
+      # ── Step 2: find only the .md files changed in this PR (exclude README) ──
+      - name: Find changed Markdown files
         if: steps.folder-check.outputs.changed == 'true'
         id: find-md
         run: |
-          MD_FILES=$(find "${{ env.WATCHED_FOLDER }}" -name "*.md" | sort | tr '\n' ' ')
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          MD_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+                     | grep "^${{ env.WATCHED_FOLDER }}/.*\.md$" \
+                     | grep -iv "README\.md" \
+                     | sort | tr '\n' ' ' | sed 's/ *$//' || true)
           if [ -n "$MD_FILES" ]; then
             echo "found=true"        >> "$GITHUB_OUTPUT"
             echo "files=$MD_FILES"   >> "$GITHUB_OUTPUT"
-            echo "::notice::Markdown files found: $MD_FILES"
+            echo "::notice::Requirement files changed: $MD_FILES"
           else
             echo "found=false"       >> "$GITHUB_OUTPUT"
-            echo "::warning::No Markdown files found in '${{ env.WATCHED_FOLDER }}'."
+            echo "::warning::No relevant Markdown files changed in '${{ env.WATCHED_FOLDER }}'."
           fi
 
-      # ── Step 3: generate the HLD document ──
-      - name: Generate HLD
+      # ── Step 3: generate one HLD file per changed requirement file ──
+      - name: Generate HLD files
         if: >
           steps.folder-check.outputs.changed == 'true' &&
           steps.find-md.outputs.found == 'true'
         run: |
           chmod +x .github/scripts/generate-hld.sh
+          read -ra REQ_FILES <<< "${{ steps.find-md.outputs.files }}"
           .github/scripts/generate-hld.sh \
-            "${{ env.WATCHED_FOLDER }}" \
-            "${{ env.HLD_OUTPUT }}" \
+            "${{ env.HLD_OUTPUT_DIR }}" \
             "${{ github.event.pull_request.number }}" \
-            "${{ github.event.pull_request.title }}"
+            "${{ github.event.pull_request.title }}" \
+            "${REQ_FILES[@]}"
 
-      # ── Step 4: upload the HLD as a workflow artifact ──
-      - name: Upload HLD artifact
+      # ── Step 4: upload the generated HLD files as a workflow artifact ──
+      - name: Upload HLD artifacts
         if: >
           steps.folder-check.outputs.changed == 'true' &&
           steps.find-md.outputs.found == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: hld-document
-          path: ${{ env.HLD_OUTPUT }}
+          name: hld-documents
+          path: ${{ env.HLD_OUTPUT_DIR }}/*-hld.md
           if-no-files-found: warn
 
-      # ── Step 5: open a PR with the updated HLD ──
-      - name: Open PR with generated HLD
+      # ── Step 5: open a PR with the updated HLD files ──
+      - name: Open PR with generated HLD files
         if: >
           steps.folder-check.outputs.changed == 'true' &&
           steps.find-md.outputs.found == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: "docs: regenerate HLD from PR #${{ github.event.pull_request.number }}"
+          commit-message: "docs: regenerate HLD file(s) from PR #${{ github.event.pull_request.number }}"
           branch: hld/auto-update-pr-${{ github.event.pull_request.number }}
-          title: "docs: update HLD from PR #${{ github.event.pull_request.number }}"
+          title: "docs: update HLD file(s) from PR #${{ github.event.pull_request.number }}"
           body: |
             Auto-generated HLD update triggered by PR #${{ github.event.pull_request.number }}
             merged into `${{ env.TARGET_BRANCH }}`.
 
             **Source folder:** `${{ env.WATCHED_FOLDER }}`
-            **Output file:** `${{ env.HLD_OUTPUT }}`
+            **Output directory:** `${{ env.HLD_OUTPUT_DIR }}`
+            **Updated requirement files:** `${{ steps.find-md.outputs.files }}`
+
+            Each changed requirement file generates a matching HLD file, e.g.:
+            - `doc/requirements/payment-flow.md` → `doc/hld/payment-flow-hld.md`
           labels: documentation,automated

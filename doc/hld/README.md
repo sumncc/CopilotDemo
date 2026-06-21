@@ -1,11 +1,17 @@
 # High-Level Design (HLD)
 
-This folder contains the auto-generated High-Level Design document.
+This folder contains auto-generated High-Level Design documents.
 
-`HLD.md` is created or updated automatically by the **HLD Generator** workflow
+One `*-hld.md` file is created or updated for each requirement Markdown file
+that changes in a merged pull request. For example:
+
+- `doc/requirements/payment-flow.md` → `doc/hld/payment-flow-hld.md`
+- `doc/requirements/user-authentication.md` → `doc/hld/user-authentication-hld.md`
+
+Files are generated automatically by the **HLD Generator** workflow
 (`.github/workflows/hld-generator.yml`) whenever a pull request that changes
 `doc/requirements/` is merged into `main`.
 
-Do **not** edit `HLD.md` by hand — your changes will be overwritten on the
-next automated run. To update the HLD, update the source requirement files in
-`doc/requirements/` instead.
+Do **not** edit `*-hld.md` files by hand — your changes will be overwritten on
+the next automated run. To update an HLD, update the corresponding source
+requirement file in `doc/requirements/` instead.
