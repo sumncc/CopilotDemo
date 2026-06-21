@@ -1,9 +1,9 @@
 # Stories: shopping-cart-system
 
 > **Auto-generated** from `doc/lld/shopping-cart-system-lld.md`
-> triggered by PR #33: *docs: update LLD file(s) from commit 3a030bcb*
+> triggered by PR #43: *docs: update LLD file(s) from commit 631872dc*
 >
-> Generated: 2026-06-21T22:37:36Z
+> Generated: 2026-06-21T23:40:06Z
 
 ## Generation Context
 
