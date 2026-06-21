@@ -47,3 +47,13 @@ flowchart LR
 Do **not** edit `*-hld.md` files by hand — your changes will be overwritten on
 the next automated run. To update an HLD, update the corresponding source
 requirement file in `doc/requirements/` instead.
+
+## HLD → LLD pipeline
+
+When an `*-hld.md` file in this folder is merged into `main`, the **LLD
+Generator** workflow (`.github/workflows/lld-generator.yml`) automatically
+generates a corresponding LLD file under `doc/lld/`. For example:
+
+- `doc/hld/payment-flow-hld.md` → `doc/lld/payment-flow-lld.md`
+
+See [`doc/lld/README.md`](../lld/README.md) for details on the LLD output format.
