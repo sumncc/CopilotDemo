@@ -50,9 +50,14 @@ requirement file in `doc/requirements/` instead.
 
 ## HLD → LLD pipeline
 
-When an `*-hld.md` file in this folder is merged into `main`, the **LLD
-Generator** workflow (`.github/workflows/lld-generator.yml`) automatically
-generates a corresponding LLD file under `doc/lld/`. For example:
+When a PR is merged into `main` and includes changes to any of the following,
+the **LLD Generator** workflow (`.github/workflows/lld-generator.yml`)
+automatically generates or updates the corresponding LLD file under `doc/lld/`:
+
+- `doc/hld/*-hld.md` — an HLD file was added or updated
+- `doc/lld/` — an existing LLD file was modified (re-synced from its HLD source)
+
+For example:
 
 - `doc/hld/payment-flow-hld.md` → `doc/lld/payment-flow-lld.md`
 

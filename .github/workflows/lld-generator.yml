@@ -22,6 +22,7 @@ on:
       - main                   # <-- (2) keep in sync with env.TARGET_BRANCH above
     paths:
       - 'doc/hld/**'
+      - 'doc/lld/**'
 
 jobs:
   generate-lld:
@@ -41,39 +42,68 @@ jobs:
         id: short-sha
         run: echo "sha=${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
 
-      # ── Step 1: detect whether the watched folder changed in this push ──
-      - name: Check if watched folder changed
+      # ── Step 1: detect whether either watched folder changed in this push ──
+      - name: Check if watched folders changed
         id: folder-check
         run: |
           BASE_SHA="${{ github.event.before }}"
           HEAD_SHA="${{ github.sha }}"
           CHANGED=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
-                    | grep "^${{ env.WATCHED_FOLDER }}/" || true)
+                    | grep -E "^(${{ env.WATCHED_FOLDER }}|${{ env.LLD_OUTPUT_DIR }})/" || true)
           if [ -n "$CHANGED" ]; then
             echo "changed=true"  >> "$GITHUB_OUTPUT"
-            echo "::notice::Folder '${{ env.WATCHED_FOLDER }}' changed — LLD generation triggered."
+            echo "::notice::Watched documentation folders changed — LLD generation triggered."
           else
             echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Folder '${{ env.WATCHED_FOLDER }}' did not change — skipping LLD generation."
+            echo "::notice::Watched documentation folders did not change — skipping LLD generation."
           fi
 
-      # ── Step 2: find only the *-hld.md files changed in this push ──
-      - name: Find changed HLD files
+      # ── Step 2: find *-hld.md files to regenerate ──
+      # Sources: (a) HLD files changed directly; (b) LLD files changed → map to corresponding HLD
+      - name: Find HLD files to regenerate
         if: steps.folder-check.outputs.changed == 'true'
         id: find-hld
         run: |
           BASE_SHA="${{ github.event.before }}"
           HEAD_SHA="${{ github.sha }}"
-          HLD_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
-                      | grep "^${{ env.WATCHED_FOLDER }}/.*-hld\.md$" \
-                      | sort | tr '\n' ' ' | sed 's/ *$//' || true)
-          if [ -n "$HLD_FILES" ]; then
-            echo "found=true"          >> "$GITHUB_OUTPUT"
-            echo "files=$HLD_FILES"    >> "$GITHUB_OUTPUT"
-            echo "::notice::HLD files changed: $HLD_FILES"
+          HLD_PREFIX="${{ env.WATCHED_FOLDER }}"
+          LLD_PREFIX="${{ env.LLD_OUTPUT_DIR }}"
+
+          # (a) HLD files changed directly in this push — collect into an array
+          mapfile -t HLD_DIRECT < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+                       | grep "^${HLD_PREFIX}/.*-hld\.md$" || true)
+
+          # (b) LLD files changed → derive corresponding HLD source paths
+          HLD_FROM_LLD=()
+          while IFS= read -r lld_file; do
+            # doc/lld/foo-lld.md  →  doc/hld/foo-hld.md
+            hld_file="${HLD_PREFIX}/${lld_file#${LLD_PREFIX}/}"
+            hld_file="${hld_file%-lld.md}-hld.md"
+            if [ -f "$hld_file" ]; then
+              HLD_FROM_LLD+=("$hld_file")
+            else
+              echo "::warning::No HLD source found for changed LLD '$lld_file' (expected '$hld_file') — skipping."
+            fi
+          done < <(git diff --name-only "$BASE_SHA" "$HEAD_SHA" \
+                   | grep "^${LLD_PREFIX}/.*-lld\.md$" || true)
+
+          # Merge and deduplicate both source sets
+          if [ ${#HLD_DIRECT[@]} -eq 0 ] && [ ${#HLD_FROM_LLD[@]} -eq 0 ]; then
+            ALL_HLD=""
           else
-            echo "found=false"         >> "$GITHUB_OUTPUT"
-            echo "::warning::No HLD files matching '*-hld.md' changed in '${{ env.WATCHED_FOLDER }}'."
+            ALL_HLD=$(printf '%s\n' \
+                        ${HLD_DIRECT[@]+"${HLD_DIRECT[@]}"} \
+                        ${HLD_FROM_LLD[@]+"${HLD_FROM_LLD[@]}"} \
+                      | sort -u | tr '\n' ' ' | sed 's/ *$//')
+          fi
+
+          if [ -n "$ALL_HLD" ]; then
+            echo "found=true"       >> "$GITHUB_OUTPUT"
+            echo "files=$ALL_HLD"   >> "$GITHUB_OUTPUT"
+            echo "::notice::HLD files to process: $ALL_HLD"
+          else
+            echo "found=false"      >> "$GITHUB_OUTPUT"
+            echo "::warning::No processable HLD files found for the changed documentation."
           fi
 
       # ── Step 3: generate one LLD file per changed HLD file ──
@@ -115,10 +145,14 @@ jobs:
             Auto-generated LLD update triggered by push to `${{ env.TARGET_BRANCH }}`
             (commit `${{ github.sha }}`).
 
-            **Source folder:** `${{ env.WATCHED_FOLDER }}`
-            **Output directory:** `${{ env.LLD_OUTPUT_DIR }}`
-            **Updated HLD files:** `${{ steps.find-hld.outputs.files }}`
+            **HLD source folder:** `${{ env.WATCHED_FOLDER }}`
+            **LLD output directory:** `${{ env.LLD_OUTPUT_DIR }}`
+            **HLD files processed:** `${{ steps.find-hld.outputs.files }}`
 
-            Each changed HLD file generates a matching LLD file, e.g.:
+            Triggered when any of the following change on `${{ env.TARGET_BRANCH }}`:
+            - `${{ env.WATCHED_FOLDER }}/*-hld.md` — HLD files updated or added
+            - `${{ env.LLD_OUTPUT_DIR }}/` — existing LLD files modified (re-synced from HLD)
+
+            Each HLD file generates (or updates) a matching LLD file, e.g.:
             - `doc/hld/payment-flow-hld.md` → `doc/lld/payment-flow-lld.md`
           labels: documentation,automated
