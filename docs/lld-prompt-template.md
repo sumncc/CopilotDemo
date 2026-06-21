@@ -68,16 +68,17 @@ Append any of these lines to the prompt above when needed:
 ## How the Automation Works
 
 ```
-PR merged into <target-branch>
+Push to <target-branch> (after HLD PR merge)
         │
         ▼
 GitHub Actions: lld-generator.yml
         │
         ├─ Did <hld-folder> change? ──No──► Stop (no-op)
+        │   (compares github.event.before → github.sha on main)
         │
         └─ Yes
               │
-              ├─ Find *-hld.md files changed in the PR
+              ├─ Find *-hld.md files changed in this push
               │       │
               │       └─ None found? ──► Warning, stop
               │
@@ -95,6 +96,12 @@ GitHub Actions: lld-generator.yml
                                             └─ Upload as workflow artifact "lld-documents"
 ```
 
+> **Note:** The workflow triggers on `push` to `<target-branch>` (not on PR
+> open/update). This means it fires only after an HLD PR is merged and the
+> resulting commit lands on `main`. Changed-file detection uses
+> `github.event.before` → `github.sha` so it always reflects the actual
+> post-merge state on `main`.
+
 ---
 
 ## Configuration
@@ -104,7 +111,7 @@ The workflow is configured via environment variables at the top of
 
 ```yaml
 env:
-  TARGET_BRANCH:  main                  # branch that receives merged PRs
+  TARGET_BRANCH:  main                  # branch to watch for pushes (keep in sync with on.push.branches)
   WATCHED_FOLDER: doc/hld               # folder to watch for HLD Markdown changes
   LLD_OUTPUT_DIR: doc/lld               # directory where LLD files are written
 ```

@@ -6,13 +6,13 @@
 # derived from the HLD content.
 #
 # Usage:
-#   generate-lld.sh <output-dir> <pr-number> <pr-title> <hld-file> [<hld-file> ...]
+#   generate-lld.sh <output-dir> <commit-sha> <trigger-description> <hld-file> [<hld-file> ...]
 #
 # Arguments:
-#   output-dir   Directory where LLD files are written (e.g. "doc/lld")
-#   pr-number    Pull-request number           (e.g. "42")
-#   pr-title     Pull-request title            (e.g. "Add payment flow")
-#   hld-file...  One or more HLD Markdown files to process
+#   output-dir            Directory where LLD files are written (e.g. "doc/lld")
+#   commit-sha            Commit SHA that triggered generation  (e.g. "abc1234")
+#   trigger-description   Human-readable description of trigger (e.g. "push to main")
+#   hld-file...           One or more HLD Markdown files to process
 #
 # Output naming:
 #   doc/hld/payment-flow-hld.md        -> doc/lld/payment-flow-lld.md
@@ -20,9 +20,9 @@
 
 set -euo pipefail
 
-LLD_OUTPUT_DIR="${1:?Usage: generate-lld.sh <output-dir> <pr-number> <pr-title> <hld-file> [...]}"
-PR_NUMBER="${2:-unknown}"
-PR_TITLE="${3:-unknown}"
+LLD_OUTPUT_DIR="${1:?Usage: generate-lld.sh <output-dir> <commit-sha> <trigger-description> <hld-file> [...]}"
+COMMIT_SHA="${2:-unknown}"
+TRIGGER_DESC="${3:-unknown}"
 shift 3
 
 if [ "$#" -eq 0 ]; then
@@ -221,7 +221,7 @@ for HLD_FILE in "$@"; do
     echo "# Low-Level Design: ${TITLE}"
     echo ""
     echo "> **Auto-generated** from \`${HLD_FILE}\`"
-    echo "> triggered by PR #${PR_NUMBER}: *${PR_TITLE}*"
+    echo "> triggered by commit \`${COMMIT_SHA}\` (${TRIGGER_DESC})"
     echo ">"
     echo "> Generated: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
     echo ""
