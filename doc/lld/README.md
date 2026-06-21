@@ -9,8 +9,12 @@ that changes in a merged pull request. For example:
 - `doc/hld/user-authentication-hld.md` → `doc/lld/user-authentication-lld.md`
 
 Files are generated automatically by the **LLD Generator** workflow
-(`.github/workflows/lld-generator.yml`) whenever a pull request that changes
-`doc/hld/*-hld.md` files is merged into `main`.
+(`.github/workflows/lld-generator.yml`) whenever a pull request is merged into
+`main` and includes changes to either:
+
+- `doc/hld/*-hld.md` — an HLD file was added or updated, or
+- `doc/lld/` — an existing LLD file was modified (the automation re-syncs it
+  from its corresponding HLD source).
 
 ## LLD document structure
 
